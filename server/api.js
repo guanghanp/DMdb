@@ -48,29 +48,69 @@ router.get("/", function(req, res) {
   res.send("Yo!  This my API.  Call it right, or don't call it at all!");
 });
 
-// GET - read data from database, return status code 200 if successful
-router.get("/api/restaurants", function(req, res) {
+// GET - from album table
+router.get("/api/album", function(req, res) {
   // get all restaurants (limited to first 10 here), return status code 200
-  global.connection.query(
-    "SELECT * FROM nyc_inspections.Restaurants LIMIT 10",
-    function(error, results, fields) {
-      if (error) throw error;
-      res.send(JSON.stringify({ status: 200, error: null, response: results }));
-    }
-  );
+  global.connection.query("SELECT * FROM DMDB_sp20.Album", function(
+    error,
+    results,
+    fields
+  ) {
+    if (error) throw error;
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+  });
 });
 
-router.get("/api/restaurants/:id", function(req, res) {
-  console.log(req.params.id);
-  //read a single restaurant with RestauantID = req.params.id (the :id in the url above), return status code 200 if successful, 404 if not
-  global.connection.query(
-    "SELECT * FROM nyc_inspections.Restaurants WHERE RestaurantID = ?",
-    [req.params.id],
-    function(error, results, fields) {
-      if (error) throw error;
-      res.send(JSON.stringify({ status: 200, error: null, response: results }));
-    }
-  );
+// GET - from artist table
+router.get("/api/artist", function(req, res) {
+  // get all restaurants (limited to first 10 here), return status code 200
+  global.connection.query("SELECT * FROM DMDB_sp20.artist", function(
+    error,
+    results,
+    fields
+  ) {
+    if (error) throw error;
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+  });
+});
+
+// GET - from contributor table
+router.get("/api/contributor", function(req, res) {
+  // get all restaurants (limited to first 10 here), return status code 200
+  global.connection.query("SELECT * FROM DMDB_sp20.contributor", function(
+    error,
+    results,
+    fields
+  ) {
+    if (error) throw error;
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+  });
+});
+
+// GET - from review table
+router.get("/api/review", function(req, res) {
+  // get all restaurants (limited to first 10 here), return status code 200
+  global.connection.query("SELECT * FROM DMDB_sp20.review", function(
+    error,
+    results,
+    fields
+  ) {
+    if (error) throw error;
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+  });
+});
+
+// GET - from soundtrack table
+router.get("/api/soundtrack", function(req, res) {
+  // get all restaurants (limited to first 10 here), return status code 200
+  global.connection.query("SELECT * FROM DMDB_sp20.soundtrack", function(
+    error,
+    results,
+    fields
+  ) {
+    if (error) throw error;
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+  });
 });
 
 // PUT - UPDATE data in database, make sure to get the ID of the row to update from URL route, return status code 200 if successful

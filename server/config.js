@@ -1,10 +1,10 @@
 var config = {
   local: {
     database: {
-      host: "localhost",
-      user: "lab3", //'your localhost username here'
-      password: "helloworld", //your localhost password here'
-      schema: "nyc_inspections" //'your localhost default schema here'
+      host: "sunapee.cs.dartmouth.edu",
+      user: "DMDB_sp20", //'your localhost username here'
+      password: "k(EH;e9!", //your localhost password here'
+      schema: "DMDB_sp20" //'your localhost default schema here'
     },
     port: 3001
   }
