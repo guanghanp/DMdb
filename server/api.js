@@ -48,71 +48,73 @@ router.get("/", function(req, res) {
   res.send("Yo!  This my API.  Call it right, or don't call it at all!");
 });
 
-// GET - read data from database, return status code 200 if successful
-router.get("/api/restaurants", function(req, res) {
-  // get all restaurants (limited to first 10 here), return status code 200
-  global.connection.query(
-    "SELECT * FROM nyc_inspections.Restaurants LIMIT 10",
-    function(error, results, fields) {
-      if (error) throw error;
-      res.send(JSON.stringify({ status: 200, error: null, response: results }));
-    }
-  );
+// GET all artists
+router.get("/api/artist", function(req, res) {
+  global.connection.query("SELECT * FROM DMDB_sp20.Artist", function(
+    error,
+    results,
+    fields
+  ) {
+    if (error) throw error;
+    res.send(JSON.stringify(results));
+  });
 });
 
-router.get("/api/restaurants/:id", function(req, res) {
-  console.log(req.params.id);
-  //read a single restaurant with RestauantID = req.params.id (the :id in the url above), return status code 200 if successful, 404 if not
+// GET album for a artist
+router.get("/api/artist/:id/album", function(req, res) {
   global.connection.query(
-    "SELECT * FROM nyc_inspections.Restaurants WHERE RestaurantID = ?",
+    `SELECT Album.AlbumID,Album.AlbumName,Album.DateReleased FROM Artist JOIN Contributor ON Artist.ArtistID=Contributor.ArtistID
+    JOIN Album ON Contributor.AlbumID=Album.AlbumID
+    WHERE Artist.ArtistID = ?`,
     [req.params.id],
     function(error, results, fields) {
       if (error) throw error;
-      res.send(JSON.stringify({ status: 200, error: null, response: results }));
+      res.send(JSON.stringify(results));
     }
   );
 });
 
-// PUT - UPDATE data in database, make sure to get the ID of the row to update from URL route, return status code 200 if successful
-router.put("/api/restaurants/:id", function(req, res) {
+// PUT Artist
+router.put("/api/artist/:id", function(req, res) {
   console.log(req.body);
-  res.send(
-    JSON.stringify({
-      status: 200,
-      error: null,
-      response:
-        "here on a put -- update restaurant with RestaurantID=" + req.params.id
-    })
+  global.connection.query(
+    "UPDATE Artist SET ? WHERE ArtistID=?",
+    [req.body, req.params.id],
+    function(error, results, fields) {
+      if (error) throw error;
+      res.send(req.body);
+    }
   );
 });
 
-// POST -- create new restaurant, return location of new restaurant in location header, return status code 200 if successful
-router.post("/api/restaurants", function(req, res) {
-  console.log(req.body);
-  res.send(
-    JSON.stringify({
-      status: 201,
-      error: null,
-      Location: "/api/restaurants/id of new restaurant here",
-      response:
-        "here on a post -- create a new restaurant for " +
-        req.body.RestaurantName +
-        " in " +
-        req.body.Boro
-    })
-  );
+// POST Artist
+router.post("/api/artist", function(req, res) {
+  global.connection.query("INSERT INTO Artist SET ?", req.body, function(
+    error,
+    results,
+    fields
+  ) {
+    if (error) throw error;
+    const newArtist = Object.assign(
+      {},
+      { ArtistID: results["insertId"] },
+      req.body
+    );
+    res.send(JSON.stringify(newArtist));
+  });
 });
 
-// DELETE -- delete restaurant with RestaurantID of :id, return status code 200 if successful
-router.delete("/api/restaurants/:id", function(req, res) {
-  res.send(
-    JSON.stringify({
-      status: 200,
-      error: null,
-      response:
-        "here on a delete -- remove restaurant with RestaurantID=" +
-        req.params.id
-    })
+// DELETE Artist
+router.delete("/api/artist/:id", function(req, res) {
+  global.connection.query(
+    "DELETE FROM Artist WHERE ArtistID = ?",
+    [req.params.id],
+    function(error, results, fields) {
+      if (error) throw error;
+      res.send(
+        JSON.stringify({ status: 200, error: null, response: "success" })
+      );
+    }
   );
 });
 

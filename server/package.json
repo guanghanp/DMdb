@@ -5,6 +5,7 @@
   "main": "api.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "nodemon api.js",
     "start": "node api.js"
   },
   "author": "Guanghan Pan, Dartmouth CS61, Spring 2020",
