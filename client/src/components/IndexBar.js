@@ -17,9 +17,12 @@ import { ArtistShape } from "./Artist";
 const SectionItem = styled(ListGroupItem)`
   font-weight: bold;
   padding: 0.4rem;
+  cursor: pointer;
 `;
 
-const TitleItem = styled.li``;
+const TitleItem = styled(ListGroupItem)`
+  cursor: pointer;
+`;
 
 /*
   Sections headers sub-component in the IndexBar.
@@ -71,13 +74,18 @@ IndexSections.defaultProps = {
 */
 export function IndexTitles(props) {
   // Sort the aritsts by name
-  const { artists, select } = props;
+  const { artists, select, currentArtist } = props;
   artists.sort((a1, a2) => a1.ArtistName.localeCompare(a2.ArtistName));
 
   // Assemble the list of titles
   const titles = artists.map(artist => (
     <TitleItem
-      key={artist.ArtistName}
+      key={artist.ArtistID}
+      active={
+        currentArtist === null
+          ? false
+          : artist.ArtistID === currentArtist.ArtistID
+      }
       onClick={() => {
         select(artist);
       }}
@@ -88,7 +96,7 @@ export function IndexTitles(props) {
 
   return (
     <div>
-      <ul className="list-unstyled">{titles}</ul>
+      <ListGroup>{titles}</ListGroup>
     </div>
   );
 }
@@ -99,7 +107,6 @@ IndexTitles.propTypes = {
 };
 
 const toSection = function nameToSection(artist) {
-  console.log(artist);
   return artist.ArtistName[0].toUpperCase();
 };
 
@@ -142,7 +149,7 @@ class IndexBar extends Component {
   }
 
   render() {
-    const { collection, select } = this.props;
+    const { collection, select, currentArtist } = this.props;
     const { section } = this.state;
 
     // Conditionally create the title list if we have a selected section
@@ -151,7 +158,13 @@ class IndexBar extends Component {
       const artists = collection.filter(
         artist => toSection(artist) === section
       );
-      names = <IndexTitles artists={artists} select={select} />;
+      names = (
+        <IndexTitles
+          artists={artists}
+          select={select}
+          currentArtist={currentArtist}
+        />
+      );
     } else {
       names = <p style={{ textAlign: "center" }}>Select a section</p>;
     }
@@ -168,7 +181,7 @@ class IndexBar extends Component {
           </Col>
         </Row>
         <Row>
-          <Col xs={12} sm={6} md={3}>
+          <Col xs={12} sm={6} md={3} style={{ marginTop: "50px" }}>
             {names}
           </Col>
           <Col>{this.props.children}</Col>

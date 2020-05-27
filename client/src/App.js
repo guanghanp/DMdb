@@ -5,6 +5,7 @@ import { Container, Button } from "react-bootstrap";
 import IndexBar from "./components/IndexBar";
 import Artist from "./components/Artist";
 import Editor from "./components/Editor";
+import Soundtrack from "./components/Soundtrack";
 
 const Title = styled.h1`
   text-align: center;
@@ -26,13 +27,16 @@ class App extends Component {
       mode: "view",
       currentArtist: undefined,
       currentAlbums: undefined,
+      currentSoundtrack: undefined,
       collection: [],
       loggedIn: true
     };
 
     this.handleEditorReturn = this.handleEditorReturn.bind(this);
+    this.handleReviewUpdate = this.handleReviewUpdate.bind(this);
     this.removeArtist = this.removeArtist.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
+    this.handleSelectSoundtrack = this.handleSelectSoundtrack.bind(this);
   }
 
   componentDidMount() {
@@ -51,7 +55,7 @@ class App extends Component {
 
   handleSelect(artist) {
     if (artist) {
-      fetch(`/api/artist/${artist.ArtistID}/album`)
+      fetch(`/api/artist/${artist.ArtistID}/soundtrack`)
         .then(response => {
           if (response.ok) {
             return response.json();
@@ -59,13 +63,80 @@ class App extends Component {
           throw new Error(response.statusText);
         })
         .then(data => {
-          console.log(data);
-          this.setState({ currentArtist: artist, currentAlbums: data });
+          var albums = {};
+          data.forEach(element => {
+            if (albums[element.AlbumID]) {
+              albums[element.AlbumID].Soundtracks.push({
+                SoundtrackID: element.SoundtrackID,
+                SoundtrackName: element.SoundtrackName,
+                GenreName: element.GenreName,
+                AlbumName: element.AlbumName
+              });
+            } else {
+              albums[element.AlbumID] = {
+                AlbumID: element.AlbumID,
+                AlbumName: element.AlbumName,
+                DateReleased: element.DateReleased,
+                Soundtracks:
+                  element.SoundtrackID === null
+                    ? []
+                    : [
+                        {
+                          SoundtrackID: element.SoundtrackID,
+                          SoundtrackName: element.SoundtrackName,
+                          GenreName: element.GenreName,
+                          AlbumName: element.AlbumName
+                        }
+                      ]
+              };
+            }
+          });
+          this.setState({
+            currentArtist: artist,
+            currentAlbums: albums,
+            currentSoundtrack: undefined
+          });
         })
         .catch(err => console.log(err)); // eslint-disable-line no-console
     } else {
-      this.setState({ currentArtist: undefined, currentAlbums: undefined });
+      this.setState({
+        currentArtist: undefined,
+        currentAlbums: undefined,
+        currentSoundtrack: undefined
+      });
     }
+  }
+
+  handleSelectSoundtrack(soundtrack) {
+    if (soundtrack) {
+      fetch(`/api/soundtrack/${soundtrack.SoundtrackID}/review`)
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error(response.statusText);
+        })
+        .then(data => {
+          const soundtrackInfo = {
+            SoundtrackID: soundtrack.SoundtrackID,
+            SoundtrackName: soundtrack.SoundtrackName,
+            GenreName: soundtrack.GenreName,
+            AlbumName: soundtrack.AlbumName,
+            ArtistName: this.state.currentArtist.ArtistName,
+            reviews: data
+          };
+          this.setState({ currentSoundtrack: soundtrackInfo });
+          console.log(soundtrackInfo);
+        })
+        .catch(err => console.log(err)); // eslint-disable-line no-console
+    }
+  }
+
+  handleReviewUpdate(newReviews) {
+    const newInfo = Object.assign({}, this.state.currentSoundtrack, {
+      reviews: newReviews
+    });
+    this.setState({ currentSoundtrack: newInfo });
   }
 
   handleEditorReturn(newArtist) {
@@ -155,7 +226,13 @@ class App extends Component {
   }
 
   render() {
-    const { currentArtist, mode, loggedIn, currentAlbums } = this.state;
+    const {
+      currentArtist,
+      mode,
+      loggedIn,
+      currentAlbums,
+      currentSoundtrack
+    } = this.state;
 
     if (mode === "view") {
       const newButton = (
@@ -221,8 +298,20 @@ class App extends Component {
               currentArtist={currentArtist}
               select={this.handleSelect}
             >
-              {currentArtist && (
-                <Artist artist={currentArtist} albums={currentAlbums} />
+              {currentSoundtrack && (
+                <Soundtrack
+                  Return={() => this.setState({ currentSoundtrack: undefined })}
+                  soundtrack={currentSoundtrack}
+                  updateReview={this.handleReviewUpdate}
+                />
+              )}
+              {!currentSoundtrack && currentArtist && (
+                <Artist
+                  artist={currentArtist}
+                  albums={currentAlbums}
+                  soundtrack={currentSoundtrack}
+                  select={this.handleSelectSoundtrack}
+                />
               )}
             </IndexBar>
           </Container>

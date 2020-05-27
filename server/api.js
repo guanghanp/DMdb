@@ -60,12 +60,33 @@ router.get("/api/artist", function(req, res) {
   });
 });
 
-// GET album for a artist
-router.get("/api/artist/:id/album", function(req, res) {
+// GET Soundtracks for a artist
+router.get("/api/artist/:id/soundtrack", function(req, res) {
   global.connection.query(
-    `SELECT Album.AlbumID,Album.AlbumName,Album.DateReleased FROM Artist JOIN Contributor ON Artist.ArtistID=Contributor.ArtistID
+    `SELECT Album.AlbumID,Album.AlbumName,Album.DateReleased,
+    Soundtrack.SoundtrackID,Soundtrack.SoundtrackName,Genre.GenreName
+    FROM Artist 
+    JOIN Contributor ON Artist.ArtistID=Contributor.ArtistID
     JOIN Album ON Contributor.AlbumID=Album.AlbumID
-    WHERE Artist.ArtistID = ?`,
+    LEFT JOIN Soundtrack ON Album.AlbumID=Soundtrack.AlbumID
+    LEFT JOIN Genre ON Soundtrack.AlbumID=Genre.GenreID
+    WHERE Artist.ArtistID=?;`,
+    [req.params.id],
+    function(error, results, fields) {
+      if (error) throw error;
+      res.send(JSON.stringify(results));
+    }
+  );
+});
+
+// GET reviews for a soundtrack
+router.get("/api/soundtrack/:id/review", function(req, res) {
+  global.connection.query(
+    `SELECT Review.Rating,Review.Review,Review.Likes,User.Username, Review.TimeCreated
+    FROM Soundtrack 
+    JOIN Review ON Soundtrack.SoundtrackID=Review.SoundtrackID
+    JOIN User ON Review.UserID=User.UserID
+    WHERE Soundtrack.SoundtrackID=?;`,
     [req.params.id],
     function(error, results, fields) {
       if (error) throw error;
@@ -101,6 +122,18 @@ router.post("/api/artist", function(req, res) {
       req.body
     );
     res.send(JSON.stringify(newArtist));
+  });
+});
+
+// POST Review
+router.post("/api/review", function(req, res) {
+  global.connection.query("INSERT INTO Review SET ?", req.body, function(
+    error,
+    results,
+    fields
+  ) {
+    if (error) throw error;
+    res.send(JSON.stringify(req.body));
   });
 });
 

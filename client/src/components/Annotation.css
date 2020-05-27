@@ -1,0 +1,64 @@
+.content {
+  padding: 0 2rem 1rem 2rem !important;
+  margin: 2rem auto !important;
+  align-content: center;
+}
+
+.annotation-row {
+  padding-top: 25px;
+}
+
+.add-row {
+  padding-top: 25px;
+}
+
+.divider {
+  border: 0.5px solid gray;
+}
+
+.annotation-box {
+  text-align: left;
+  height: 240px;
+  width: auto;
+  border: 2px solid gray;
+  border-radius: 10px;
+  overflow-y: auto;
+  align-items: left;
+  word-break: break-word;
+}
+
+.annotation-text {
+  display: inline-block;
+  width: 80%;
+  vertical-align: top;
+}
+
+.comment-container {
+  margin: 1rem 0 1rem 0;
+}
+
+.review-info {
+  font-size: small;
+  color: grey;
+  margin-bottom: 0 !important;
+  margin-top: 10px;
+  text-align: right;
+  margin-left: auto;
+  margin-right: 20px;
+}
+
+.add-button {
+  margin: 10px;
+}
+
+.return-button {
+  margin-bottom: 20px;
+}
+
+.anno-buttons {
+  padding-left: 5px !important;
+}
+
+.comment-title {
+  margin: 0 !important;
+}
