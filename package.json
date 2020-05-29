@@ -36,5 +36,8 @@
     "{client/src,server}/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "react-google-login": "^5.1.20"
   }
 }

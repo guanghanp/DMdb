@@ -1,16 +1,25 @@
 import React, { Component } from "react";
 import { Form, FormGroup, Label, Input, Button } from "reactstrap";
+import StarRatings from "react-star-ratings";
+import styled from "styled-components";
+
+const RatingContainer = styled.div`
+  margin: 5px;
+  margin-bottom: 20px;
+`;
 
 class Review extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      content: ""
+      content: "",
+      rating: 3
     };
 
     this.handleSave = this.handleSave.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
+    this.changeRating = this.changeRating.bind(this);
   }
 
   handleSave() {
@@ -22,7 +31,7 @@ class Review extends Component {
       Review: this.state.content,
       TimeCreated: now,
       Likes: 0,
-      Rating: 4
+      Rating: this.state.rating
     };
     this.props.complete(newReview);
   }
@@ -31,15 +40,30 @@ class Review extends Component {
     this.props.complete();
   }
 
+  changeRating(newRating, name) {
+    this.setState({
+      rating: newRating
+    });
+  }
+
   render() {
     const { content } = this.state;
-
     return (
       <Form id="editorComp">
         <FormGroup>
           <Label for="Comment">
             <h3 className="comment-title">New Review</h3>
           </Label>
+          <RatingContainer>
+            Rating:{" "}
+            <StarRatings
+              rating={this.state.rating}
+              changeRating={this.changeRating}
+              starDimension="20px"
+              starSpacing="1px"
+              numberOfStars={5}
+            />
+          </RatingContainer>
           <Input
             id="comment"
             name="textInput"

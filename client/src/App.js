@@ -6,6 +6,10 @@ import IndexBar from "./components/IndexBar";
 import Artist from "./components/Artist";
 import Editor from "./components/Editor";
 import Soundtrack from "./components/Soundtrack";
+import { GoogleLogin, GoogleLogout } from "react-google-login";
+
+const GOOGLE_CLIENT_ID =
+  "991227765960-v1oecho8l0p50jli8v6p0b5pa3rn3s8k.apps.googleusercontent.com";
 
 const Title = styled.h1`
   text-align: center;
@@ -29,7 +33,7 @@ class App extends Component {
       currentAlbums: undefined,
       currentSoundtrack: undefined,
       collection: [],
-      loggedIn: true
+      User: undefined
     };
 
     this.handleEditorReturn = this.handleEditorReturn.bind(this);
@@ -37,6 +41,9 @@ class App extends Component {
     this.removeArtist = this.removeArtist.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
     this.handleSelectSoundtrack = this.handleSelectSoundtrack.bind(this);
+    this.handleGoogleLogin = this.handleGoogleLogin.bind(this);
+    this.handleGoogleFailure = this.handleGoogleFailure.bind(this);
+    this.handleGoogleLogout = this.handleGoogleLogout.bind(this);
   }
 
   componentDidMount() {
@@ -209,6 +216,32 @@ class App extends Component {
     this.setState({ mode: "view" });
   }
 
+  handleGoogleLogin(response) {
+    fetch("/login", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${response.tokenId}`
+      }
+    })
+      .then(fetchResponse => {
+        if (!fetchResponse.ok) {
+          alert("Unable to authenticate", fetchResponse.statusText);
+          this.setState({ User: undefined });
+        } else {
+          return fetchResponse.json();
+        }
+      })
+      .then(UserInfo => {
+        this.setState({ User: UserInfo });
+      });
+  }
+
+  handleGoogleFailure(response) {}
+
+  handleGoogleLogout() {
+    this.setState({ User: undefined });
+  }
+
   removeArtist(oldArtist) {
     fetch(`/api/artist/${oldArtist.ArtistID}`, { method: "DELETE" })
       .then(response => {
@@ -229,7 +262,7 @@ class App extends Component {
     const {
       currentArtist,
       mode,
-      loggedIn,
+      User,
       currentAlbums,
       currentSoundtrack
     } = this.state;
@@ -261,31 +294,42 @@ class App extends Component {
       );
 
       const loginButton = (
-        <Button size="sm" onClick={() => {}}>
-          Log In
-        </Button>
+        <GoogleLogin
+          clientId={GOOGLE_CLIENT_ID}
+          render={renderProps => (
+            <Button size="sm" onClick={renderProps.onClick}>
+              Login with Google
+            </Button>
+          )}
+          isSignedIn
+          onSuccess={this.handleGoogleLogin}
+          onFailure={this.handleGoogleFailure}
+        />
       );
 
-      const registerButton = (
-        <Button size="sm" onClick={() => {}}>
-          New User
-        </Button>
+      const logoutButton = (
+        <GoogleLogout
+          clientId={GOOGLE_CLIENT_ID}
+          render={renderProps => (
+            <Button size="sm" onClick={renderProps.onClick}>
+              Logout
+            </Button>
+          )}
+          onLogoutSuccess={this.handleGoogleLogout}
+        />
       );
 
       let buttons;
-      if (loggedIn) {
+      if (User) {
         buttons = (
           <Container fluid>
-            {newButton} {currentArtist && editButton}{" "}
-            {currentArtist && deleteButton}{" "}
+            {User.Admin === 1 && newButton}{" "}
+            {currentArtist && User.Admin === 1 && editButton}{" "}
+            {currentArtist && User.Admin === 1 && deleteButton} {logoutButton}
           </Container>
         );
       } else {
-        buttons = (
-          <Container fluid>
-            {loginButton} {registerButton}
-          </Container>
-        );
+        buttons = <Container fluid>{loginButton}</Container>;
       }
 
       return (
@@ -303,6 +347,7 @@ class App extends Component {
                   Return={() => this.setState({ currentSoundtrack: undefined })}
                   soundtrack={currentSoundtrack}
                   updateReview={this.handleReviewUpdate}
+                  User={User}
                 />
               )}
               {!currentSoundtrack && currentArtist && (

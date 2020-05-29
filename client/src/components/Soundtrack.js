@@ -12,6 +12,7 @@ import "./Annotation.css";
 import Review from "./Review";
 import PropTypes from "prop-types";
 import styled from "styled-components";
+import StarRatings from "react-star-ratings";
 
 const Name = styled.h2``;
 
@@ -26,17 +27,15 @@ class Soundtrack extends Component {
     this.state = {
       editing: false
     };
-    this.UserID = 1;
 
     this.handleEditorReturn = this.handleEditorReturn.bind(this);
     this.handleNew = this.handleNew.bind(this);
-    this.removeComment = this.removeComment.bind(this);
   }
 
   handleEditorReturn(newReview) {
     if (newReview) {
       const newData = Object.assign({}, newReview, {
-        UserID: this.UserID,
+        UserID: this.props.User.UserID,
         SoundtrackID: this.props.soundtrack.SoundtrackID
       });
       fetch(`/api/review`, {
@@ -55,17 +54,15 @@ class Soundtrack extends Component {
         })
         .then(() => {
           const newReviews = this.props.soundtrack.reviews;
-          const review = Object.assign({}, newReview, { Username: "test" });
+          const review = Object.assign({}, newReview, {
+            Username: this.props.User.Username
+          });
           newReviews.push(review);
           this.props.updateReview(newReviews);
         })
         .catch(err => console.log(err));
     }
     this.setState({ editing: false });
-  }
-
-  removeComment(oldReview) {
-    // TODO
   }
 
   handleNew() {
@@ -75,28 +72,24 @@ class Soundtrack extends Component {
   render() {
     const {
       soundtrack: { SoundtrackName, GenreName, AlbumName, ArtistName, reviews },
-      Return
+      Return,
+      User
     } = this.props;
     const { editing } = this.state;
-
     const reviewList = reviews.map((review, i) => {
       return (
         <div key={i} className="comment-container">
+          <StarRatings
+            rating={review.Rating}
+            starDimension="20px"
+            starSpacing="1px"
+            numberOfStars={5}
+          />
           <div className="comment-text">{review.Review}</div>
-          <div className="row">
-            {/* <button
-              className="btn btn-link"
-              onClick={() => {
-                this.removeComment(review);
-              }}
-            >
-              Delete
-            </button> */}
-            <p className="review-info">
-              By:{review.Username},
-              {new Date(review.TimeCreated).toLocaleString()}
-            </p>
-          </div>
+          <p className="review-info">
+            By: {review.Username},
+            {new Date(review.TimeCreated).toLocaleString()}
+          </p>
           <hr className="divider" />
         </div>
       );
@@ -144,7 +137,7 @@ class Soundtrack extends Component {
             </Container>
           </Col>
         </Row>
-        <Row className="anno-buttons">{addButton}</Row>
+        <Row className="anno-buttons">{User && addButton}</Row>
         <Row className="add-row">{editorSection}</Row>
       </Container>
     );
