@@ -99,7 +99,7 @@ router.get("/api/artist/:id/soundtrack", function(req, res) {
     JOIN Contributor ON Artist.ArtistID=Contributor.ArtistID
     JOIN Album ON Contributor.AlbumID=Album.AlbumID
     LEFT JOIN Soundtrack ON Album.AlbumID=Soundtrack.AlbumID
-    LEFT JOIN Genre ON Soundtrack.AlbumID=Genre.GenreID
+    LEFT JOIN Genre ON Soundtrack.GenreID=Genre.GenreID
     WHERE Artist.ArtistID=?;`,
     [req.params.id],
     function(error, results, fields) {
@@ -161,7 +161,7 @@ router.post("/api/artist", authenticationMiddleware, isAdmin, function(
 });
 
 // POST Review
-router.post("/api/review", authenticationMiddleware, function(req, res) {
+router.post("/api/review", function(req, res) {
   global.connection.query("INSERT INTO Review SET ?", req.body, function(
     error,
     results,
